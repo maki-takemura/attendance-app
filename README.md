@@ -1,66 +1,251 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# coachtech 勤怠管理アプリ
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+ユーザーの勤怠と管理を目的とする勤怠管理アプリです。
 
-## About Laravel
+## 作成者
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+竹村 麻紀
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 使用技術（実行環境）
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### バックエンド
 
-## Learning Laravel
+- PHP 8.2
+- Laravel 10.x
+- Laravel Fortify（認証）
+- Laravel Sanctum（公開API認証・応用機能）
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### データベース
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- MySQL 8.4
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### フロントエンド
 
-## Laravel Sponsors
+- Blade
+- CSS
+- JavaScript
+- Vite
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+> ※Bladeテンプレート・CSS・JavaScriptは提供された完成品を使用します。
 
-### Premium Partners
+### 開発環境
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- Docker
+- Laravel Sail
+- phpMyAdmin
+- Mailpit
 
-## Contributing
+## ER図
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+追記予定
 
-## Code of Conduct
+## URL
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- 開発環境：[http://localhost](http://localhost)
+- phpMyAdmin：[http://localhost:8080](http://localhost:8080)
+- Mailpit：[http://localhost:8025](http://localhost:8025)
 
-## Security Vulnerabilities
+## 動作環境
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Docker
+- Docker Compose
 
-## License
+> ※Windowsの場合はWSL2の利用を推奨します。
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 環境構築
+
+### 1. リポジトリをクローン
+
+以下のコマンドで任意のディレクトリにリポジトリをクローンします。
+
+```bash
+git clone リポジトリURL
+cd ディレクトリ名
+```
+
+### 2. envファイルの準備
+
+`.env.example`をコピーして`.env`を作成します。
+
+```bash
+cp .env.example .env
+```
+
+`.env`ファイル内の以下のDB接続情報を確認・設定します。  
+Sailを使用するため、以下のように変更してください。
+
+```bash
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=sail
+DB_PASSWORD=password
+```
+
+メール設定を以下のように変更してください。
+
+```bash
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+```
+
+### 3. Composer依存パッケージのインストール
+
+初回セットアップ時は`vendor`ディレクトリが存在しないため、以下のDockerコマンドで`composer install`を実行します。
+
+```bash
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    composer:latest \
+    composer install --ignore-platform-reqs
+```
+
+### 4. Laravel Sailの起動
+
+以下のコマンドでDockerコンテナを起動します。
+
+```bash
+./vendor/bin/sail up -d
+```
+
+> ※以降の手順で`sail`コマンドを使用するため、以下のエイリアスを設定してください。
+
+- Bash（Linux）の場合:
+
+```bash
+echo "alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'" >> ~/.bashrc
+exec $SHELL
+```
+
+- Zsh（Mac）の場合:
+
+```bash
+echo "alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'" >> ~/.zshrc
+exec $SHELL
+```
+
+### 5. アプリケーションキーの作成
+
+以下のコマンドでアプリケーションキーを作成します。
+
+```bash
+sail artisan key:generate
+```
+
+### 6. データベースのマイグレーションと初期データ投入
+
+以下のコマンドでテーブルを作成し、ダミーデータを投入します。
+
+```bash
+sail artisan migrate:fresh --seed
+```
+
+#### マイグレーション実行時にデータベースのアクセスエラーが発生した場合
+
+既存のDockerボリュームに以前のデータベース設定が残っている場合、マイグレーション実行時に`Access denied`エラーが発生することがあります。
+
+その場合は、以下のコマンドを順に実行してください。
+
+> ※`sail down -v`を実行すると、本プロジェクトのDockerボリュームと保存されているデータベースのデータが削除されます。
+
+```bash
+sail down -v
+sail up -d
+```
+
+MySQLコンテナが起動するまで30秒程度待ってから、再度マイグレーションと初期データ投入を実行してください。
+
+```bash
+sail artisan migrate:fresh --seed
+```
+
+### 7. フロントエンド環境の準備
+
+以下のコマンドでフロントエンドの依存パッケージをインストールし、開発サーバーを起動します。
+
+```bash
+sail npm install
+sail npm run dev
+```
+
+※`npm run dev`は開発中起動したままにする必要があります。別ターミナルで実行してください。
+
+### 8. アプリケーションへのアクセス
+
+ブラウザで [http://localhost](http://localhost) にアクセスします。
+
+phpMyAdminは [http://localhost:8080](http://localhost:8080) にアクセスします。
+
+Mailpitは [http://localhost:8025](http://localhost:8025) にアクセスします。
+
+### 9. テストユーザーでのログイン　※実装後確認要
+
+Seederにより、管理者ユーザーと一般ユーザーの動作確認用データを作成します。
+
+| 種別 | メールアドレス | パスワード |
+| --- | --- | --- |
+| 一般ユーザー1 | `user1@example.com` | `password` |
+| 一般ユーザー2 | `user2@example.com` | `password` |
+| 管理者ユーザー | `user3@example.com` | `password` |
+
+ログインURLは実装後に追記予定。
+
+## テスト実行手順
+
+本プロジェクトではPHPUnitを使用してテストを実施します。
+
+### 確認事項
+
+- テストがすべて成功すること
+- テスト内容は要件シート「テストケース一覧」に従うこと
+
+### テスト実行
+
+```bash
+sail artisan test
+```
+
+### カバレッジ確認
+
+追記予定
+
+## 機能一覧
+- 一般ユーザーの会員登録・ログイン・ログアウト機能
+- 管理者ユーザーのログイン・ログアウト機能
+- 一般ユーザーの勤怠打刻機能
+- 一般ユーザーの勤怠一覧・勤怠詳細確認・修正申請機能
+- 一般ユーザーの修正申請一覧・申請詳細確認機能
+- 管理者ユーザーの日次勤怠一覧・勤怠詳細確認・修正機能
+- 管理者ユーザーのスタッフ一覧・スタッフ別月次勤怠一覧確認機能
+- 管理者ユーザーの修正申請一覧・申請詳細確認・承認機能
+- 一般ユーザーのメール認証・認証メール再送機能
+- 管理者ユーザーのスタッフ別月次勤怠CSV出力機能
+- 一般ユーザーのマイ勤怠レポート機能
+- 外部アプリケーション向け勤怠公開API機能
+
+## APIエンドポイント一覧
+| HTTPメソッド | URI | 説明 | 認証・認可 |
+| --- | --- | --- | --- |
+| GET | `/api/v1/attendance-records` | 勤怠一覧を取得する | 不要 |
+| GET | `/api/v1/attendance-records/{attendanceRecord}` | 勤怠詳細を取得する | 不要 |
+| POST | `/api/v1/attendance-records` | 勤怠を新規登録する | Sanctum 必須 |
+| PUT | `/api/v1/attendance-records/{attendanceRecord}` | 勤怠を更新する | Sanctum + AttendanceRecordPolicy（本人のみ） |
+| DELETE | `/api/v1/attendance-records/{attendanceRecord}` | 勤怠を削除する | Sanctum + AttendanceRecordPolicy（本人のみ） |
+
+## 補足
+
+### コーディング規約
+
+PHPコードは提供されたコーディング規約を基準とします。
+
+コーディング規約内に明らかな誤記または一般的なLaravel・PHPの規約との不整合がある場合は、一般的なLaravel・PHPの規約に従います。
+
+### 使用パッケージ
+
+指定された技術スタック以外のパッケージは追加しません。
+
+日本語化を行う場合も外部の翻訳パッケージは使用せず、`lang/`へメッセージファイルを手動配置して対応します。

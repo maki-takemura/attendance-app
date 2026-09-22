@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +17,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::middleware('guest:web')->group(function () {
+    Route::get('/admin/login', function () {
+        return view('admin.admin-login');
+    })->name('admin.login');
+
+    Route::post('/admin/login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:login')
+        ->name('admin.login.store');
+});
+
+Route::post('/admin/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware(['auth:web', 'admin'])
+    ->name('admin.logout');

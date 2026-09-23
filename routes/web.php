@@ -36,4 +36,7 @@ Route::post('/admin/logout', [AuthenticatedSessionController::class, 'destroy'])
 Route::middleware('auth')->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index']);
     Route::post('/attendance', [AttendanceController::class, 'store']);
+    Route::get('/attendance/list', [AttendanceController::class, 'list']);
+    Route::get('/attendance/{id}', [AttendanceController::class, 'show']);
+    Route::post('/attendance/{id}', [AttendanceController::class, 'update']);
 });

@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AttendanceActionRequest;
 use App\Http\Requests\AttendanceCorrectionRequest;
-use App\Models\AttendanceRecord;
-use Carbon\Carbon;
+use App\Services\AttendanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +12,8 @@ use Illuminate\View\View;
 
 class AttendanceController extends Controller
 {
+    public function __construct(private AttendanceService $attendanceService) {}
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -24,7 +25,7 @@ class AttendanceController extends Controller
 
         $user->setAttribute(
             'attendance_status',
-            $this->determineAttendanceStatus($attendanceRecord)
+            $this->attendanceService->determineAttendanceStatus($attendanceRecord)
         );
 
         $weekdays = ['日', '月', '火', '水', '木', '金', '土'];
@@ -94,41 +95,9 @@ class AttendanceController extends Controller
 
     public function list(Request $request): View
     {
-        $date = $this->resolveTargetMonth($request->query('date'));
-        $monthStart = $date->copy()->startOfMonth();
-        $monthEnd = $date->copy()->endOfMonth();
-        $attendanceRecords = $request->user()->attendanceRecords()
-            ->with('breakRecords')
-            ->whereBetween('date', [
-                $monthStart->format('Y-m-d'),
-                $monthEnd->format('Y-m-d'),
-            ])
-            ->get()
-            ->keyBy('date');
-        $weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-        $formattedAttendanceRecords = collect();
-
-        for ($day = $monthStart->copy(); $day->lte($monthEnd); $day->addDay()) {
-            $attendanceRecord = $attendanceRecords->get($day->format('Y-m-d'));
-            $totalBreakSeconds = $attendanceRecord === null
-                ? null
-                : $this->calculateTotalBreakSeconds($attendanceRecord);
-
-            $formattedAttendanceRecords->push([
-                'id' => $attendanceRecord?->id,
-                'date' => $day->format('m/d').'('.$weekdays[$day->dayOfWeek].')',
-                'clock_in' => $this->formatTime($attendanceRecord?->clock_in),
-                'clock_out' => $this->formatTime($attendanceRecord?->clock_out),
-                'total_break_time' => $attendanceRecord !== null && $totalBreakSeconds !== null
-                    ? $this->formatDuration($totalBreakSeconds)
-                    : null,
-                'total_time' => $this->calculateTotalWorkTime(
-                    $attendanceRecord,
-                    $totalBreakSeconds ?? 0
-                ),
-            ]);
-        }
-
+        $date = $this->attendanceService->resolveTargetMonth($request->query('date'));
+        $formattedAttendanceRecords = $this->attendanceService
+            ->buildMonthlyAttendanceRecords($request->user(), $date);
         $previousMonth = $date->copy()->subMonth()->format('Y-m');
         $nextMonth = $date->copy()->addMonth()->format('Y-m');
 
@@ -151,23 +120,7 @@ class AttendanceController extends Controller
                     ->with('applicationBreaks'),
             ])
             ->findOrFail($id);
-        $application = $attendanceRecord->applications->first();
-        $displayDate = Carbon::parse($application?->new_date ?? $attendanceRecord->date);
-        $breakRecords = $application?->applicationBreaks ?? $attendanceRecord->breakRecords;
-
-        $data = [
-            'id' => $attendanceRecord->id,
-            'year' => $displayDate->format('Y年'),
-            'date' => $displayDate->format('n月j日'),
-            'clock_in' => $this->formatTime($application?->new_clock_in ?? $attendanceRecord->clock_in),
-            'clock_out' => $this->formatTime($application?->new_clock_out ?? $attendanceRecord->clock_out),
-            'breaks' => $breakRecords->map(fn ($breakRecord) => [
-                'break_in' => $this->formatTime($breakRecord->break_in),
-                'break_out' => $this->formatTime($breakRecord->break_out),
-            ])->values()->all(),
-            'comment' => $application?->comment ?? $attendanceRecord->comment,
-            'application' => $application,
-        ];
+        $data = $this->attendanceService->formatAttendanceDetail($attendanceRecord);
 
         return view('user.user-detail', compact('user', 'data'));
     }
@@ -220,78 +173,5 @@ class AttendanceController extends Controller
         });
 
         return redirect($redirectPath);
-    }
-
-    private function determineAttendanceStatus(?AttendanceRecord $attendanceRecord): string
-    {
-        if ($attendanceRecord === null) {
-            return '勤務外';
-        }
-
-        if ($attendanceRecord->clock_out !== null) {
-            return '退勤済';
-        }
-
-        if ($attendanceRecord->breakRecords->contains(
-            fn ($breakRecord) => $breakRecord->break_out === null
-        )) {
-            return '休憩中';
-        }
-
-        return '出勤中';
-    }
-
-    private function resolveTargetMonth(mixed $requestedDate): Carbon
-    {
-        if (
-            ! is_string($requestedDate)
-            || preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $requestedDate) !== 1
-        ) {
-            return now()->startOfMonth();
-        }
-
-        return Carbon::createFromFormat('Y-m-d', $requestedDate.'-01')->startOfMonth();
-    }
-
-    private function calculateTotalBreakSeconds(AttendanceRecord $attendanceRecord): ?int
-    {
-        $completedBreakRecords = $attendanceRecord->breakRecords
-            ->whereNotNull('break_out');
-
-        if ($completedBreakRecords->isEmpty()) {
-            return null;
-        }
-
-        return $completedBreakRecords->sum(function ($breakRecord): int {
-            return Carbon::parse($breakRecord->break_in)
-                ->diffInSeconds(Carbon::parse($breakRecord->break_out));
-        });
-    }
-
-    private function calculateTotalWorkTime(
-        ?AttendanceRecord $attendanceRecord,
-        int $totalBreakSeconds
-    ): ?string {
-        if ($attendanceRecord?->clock_out === null) {
-            return null;
-        }
-
-        $workSeconds = Carbon::parse($attendanceRecord->clock_in)
-            ->diffInSeconds(Carbon::parse($attendanceRecord->clock_out));
-
-        return $this->formatDuration($workSeconds - $totalBreakSeconds);
-    }
-
-    private function formatTime(?string $time): ?string
-    {
-        return $time === null ? null : Carbon::parse($time)->format('H:i');
-    }
-
-    private function formatDuration(int $seconds): string
-    {
-        $hours = intdiv($seconds, 3600);
-        $minutes = intdiv($seconds % 3600, 60);
-
-        return sprintf('%02d:%02d:00', $hours, $minutes);
     }
 }

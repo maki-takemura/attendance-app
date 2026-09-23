@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Application;
 use App\Models\AttendanceRecord;
 use App\Models\User;
 use Carbon\Carbon;
@@ -68,6 +69,19 @@ class AttendanceService
     public function formatAttendanceDetail(AttendanceRecord $attendanceRecord): array
     {
         $application = $attendanceRecord->applications->first();
+
+        return $this->formatDetail($attendanceRecord, $application);
+    }
+
+    public function formatApplicationDetail(Application $application): array
+    {
+        return $this->formatDetail($application->attendanceRecord, $application);
+    }
+
+    private function formatDetail(
+        AttendanceRecord $attendanceRecord,
+        ?Application $application
+    ): array {
         $displayDate = Carbon::parse($application?->new_date ?? $attendanceRecord->date);
         $breakRecords = $application?->applicationBreaks ?? $attendanceRecord->breakRecords;
 

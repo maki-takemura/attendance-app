@@ -12,7 +12,10 @@ use Illuminate\View\View;
 
 class AttendanceController extends Controller
 {
-    public function __construct(private AttendanceService $attendanceService) {}
+    public function __construct(
+        private AttendanceService $attendanceService,
+        private AdminAttendanceController $adminAttendanceController
+    ) {}
 
     public function index(Request $request): View
     {
@@ -111,6 +114,10 @@ class AttendanceController extends Controller
 
     public function show(Request $request, int $id): View
     {
+        if ($request->user()->admin_status === true) {
+            return $this->adminAttendanceController->show($id);
+        }
+
         $user = $request->user();
         $attendanceRecord = $user->attendanceRecords()
             ->with([
@@ -127,6 +134,10 @@ class AttendanceController extends Controller
 
     public function update(AttendanceCorrectionRequest $request, int $id): RedirectResponse
     {
+        if ($request->user()->admin_status === true) {
+            return $this->adminAttendanceController->update($request, $id);
+        }
+
         $user = $request->user();
         $attendanceRecord = $user->attendanceRecords()->findOrFail($id);
         $redirectPath = '/attendance/'.$attendanceRecord->id;

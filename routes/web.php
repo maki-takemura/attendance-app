@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminAttendanceController;
+use App\Http\Controllers\AdminStaffController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,12 @@ Route::post('/admin/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('admin.logout');
 
 Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'index'])
+    ->middleware(['auth:web', 'admin']);
+
+Route::get('/admin/staff/list', [AdminStaffController::class, 'index'])
+    ->middleware(['auth:web', 'admin']);
+
+Route::get('/admin/attendance/staff/{id}', [AdminStaffController::class, 'showAttendance'])
     ->middleware(['auth:web', 'admin']);
 
 Route::middleware('auth')->group(function () {

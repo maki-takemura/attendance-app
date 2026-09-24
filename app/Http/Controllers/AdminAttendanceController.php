@@ -15,7 +15,7 @@ class AdminAttendanceController extends Controller
     public function index(Request $request): View
     {
         $date = $this->attendanceService->resolveTargetDate($request->query('date'));
-        $users = User::query()->where('admin_status', false)->get();
+        $users = User::query()->get();
         $attendanceRecords = AttendanceRecord::query()
             ->with('breakRecords')
             ->where('date', $date->format('Y-m-d'))

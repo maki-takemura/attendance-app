@@ -41,6 +41,33 @@ class AttendanceService
         return Carbon::createFromFormat('Y-m-d', $requestedDate.'-01')->startOfMonth();
     }
 
+    public function resolveTargetDate(mixed $requestedDate): Carbon
+    {
+        if (! is_string($requestedDate) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $requestedDate) !== 1) {
+            return now()->startOfDay();
+        }
+
+        [$year, $month, $day] = array_map('intval', explode('-', $requestedDate));
+        if (! checkdate($month, $day, $year)) {
+            return now()->startOfDay();
+        }
+
+        return Carbon::createFromFormat('Y-m-d', $requestedDate)->startOfDay();
+    }
+
+    public function attachDailyTotals(AttendanceRecord $attendanceRecord): void
+    {
+        $totalBreakSeconds = $this->calculateTotalBreakSeconds($attendanceRecord);
+        $attendanceRecord->setAttribute(
+            'total_break_time',
+            $totalBreakSeconds === null ? null : $this->formatDuration($totalBreakSeconds)
+        );
+        $attendanceRecord->setAttribute(
+            'total_time',
+            $this->calculateTotalWorkTime($attendanceRecord, $totalBreakSeconds ?? 0)
+        );
+    }
+
     public function buildMonthlyAttendanceRecords(User $user, Carbon $date): Collection
     {
         $monthStart = $date->copy()->startOfMonth();

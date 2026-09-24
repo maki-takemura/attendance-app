@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,9 @@ Route::middleware('guest:web')->group(function () {
 Route::post('/admin/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware(['auth:web', 'admin'])
     ->name('admin.logout');
+
+Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'index'])
+    ->middleware(['auth:web', 'admin']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/stamp_correction_request/list', [ApplicationController::class, 'index']);

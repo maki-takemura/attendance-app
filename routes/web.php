@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminApplicationController;
 use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\AdminStaffController;
 use App\Http\Controllers\ApplicationController;
@@ -39,6 +40,15 @@ Route::post('/admin/logout', [AuthenticatedSessionController::class, 'destroy'])
 Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'index'])
     ->middleware(['auth:web', 'admin']);
 
+Route::get('/stamp_correction_request/list', [ApplicationController::class, 'index'])
+    ->middleware('auth:web');
+
+Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'show'])
+    ->middleware(['auth:web', 'admin']);
+
+Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'approve'])
+    ->middleware(['auth:web', 'admin']);
+
 Route::get('/admin/staff/list', [AdminStaffController::class, 'index'])
     ->middleware(['auth:web', 'admin']);
 
@@ -46,7 +56,6 @@ Route::get('/admin/attendance/staff/{id}', [AdminStaffController::class, 'showAt
     ->middleware(['auth:web', 'admin']);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/stamp_correction_request/list', [ApplicationController::class, 'index']);
     Route::get('/application/{id}', [ApplicationController::class, 'show']);
     Route::get('/attendance', [AttendanceController::class, 'index']);
     Route::post('/attendance', [AttendanceController::class, 'store']);

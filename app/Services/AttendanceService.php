@@ -95,7 +95,7 @@ class AttendanceService
 
     public function formatAttendanceDetail(AttendanceRecord $attendanceRecord): array
     {
-        $application = $attendanceRecord->applications->first();
+        $application = $attendanceRecord->applications->firstWhere('approval_status', '承認待ち');
 
         return $this->formatDetail($attendanceRecord, $application);
     }
@@ -110,7 +110,7 @@ class AttendanceService
         ?Application $application
     ): array {
         $displayDate = Carbon::parse($application?->new_date ?? $attendanceRecord->date);
-        $breakRecords = $application?->applicationBreaks ?? $attendanceRecord->breakRecords;
+        $breakRecords = $application?->proposalBreaks ?? $attendanceRecord->breakRecords;
 
         return [
             'id' => $attendanceRecord->id,

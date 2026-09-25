@@ -124,7 +124,7 @@ class AttendanceController extends Controller
                 'breakRecords',
                 'applications' => fn ($query) => $query
                     ->where('approval_status', '承認待ち')
-                    ->with('applicationBreaks'),
+                    ->with('proposalBreaks'),
             ])
             ->findOrFail($id);
         $data = $this->attendanceService->formatAttendanceDetail($attendanceRecord);
@@ -176,7 +176,7 @@ class AttendanceController extends Controller
                     continue;
                 }
 
-                $application->applicationBreaks()->create([
+                $application->proposalBreaks()->create([
                     'break_in' => $breakIn,
                     'break_out' => $breakOut,
                 ]);

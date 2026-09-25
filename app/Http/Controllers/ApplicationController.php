@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Application;
 use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -14,6 +15,21 @@ class ApplicationController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+
+        if ($user->admin_status === true) {
+            $applications = Application::query()
+                ->whereHas('user', fn ($query) => $query->where('admin_status', false))
+                ->with(['user', 'attendanceRecord'])
+                ->get();
+
+            $applications->each(function (Application $application): void {
+                $application->setRelation('AttendanceRecord', $application->attendanceRecord);
+                $application->setAttribute('application_date', $application->created_at);
+            });
+
+            return view('admin.admin-application-list', compact('applications'));
+        }
+
         $applications = $user->applications()->get();
         $formattedApplications = $applications->map(fn ($application) => [
             'id' => $application->id,
@@ -33,7 +49,7 @@ class ApplicationController extends Controller
     {
         $user = $request->user();
         $application = $user->applications()
-            ->with(['applicationBreaks', 'attendanceRecord'])
+            ->with(['proposalBreaks', 'attendanceRecord'])
             ->findOrFail($id);
         $data = $this->attendanceService->formatApplicationDetail($application);
 

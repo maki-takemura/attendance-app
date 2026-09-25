@@ -21,6 +21,10 @@ class Application extends Model
         'approval_status',
     ];
 
+    protected $casts = [
+        'new_date' => 'date',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -31,7 +35,7 @@ class Application extends Model
         return $this->belongsTo(AttendanceRecord::class);
     }
 
-    public function applicationBreaks(): HasMany
+    public function proposalBreaks(): HasMany
     {
         return $this->hasMany(ApplicationBreak::class);
     }

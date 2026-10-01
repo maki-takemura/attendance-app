@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
@@ -23,4 +24,10 @@ Route::post('/register', [RegisterController::class, 'store'])
     ->middleware('guest');
 
 Route::post('/login', [LoginController::class, 'store'])
+    ->middleware(['guest', 'throttle:login']);
+
+Route::get('/admin/login', [AdminLoginController::class, 'create'])
+    ->middleware('guest');
+
+Route::post('/admin/login', [AdminLoginController::class, 'store'])
     ->middleware(['guest', 'throttle:login']);

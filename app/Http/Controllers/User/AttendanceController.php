@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AttendanceCorrectionRequest;
+use App\Services\ApplicationService;
 use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -88,5 +90,30 @@ class AttendanceController extends Controller
             'user.user-attendance-list',
             compact('date', 'previousMonth', 'nextMonth', 'formattedAttendanceRecords')
         );
+    }
+
+    /**
+     * 勤怠詳細画面を表示する。
+     */
+    public function show(Request $request, int $id, AttendanceService $attendanceService, ApplicationService $applicationService): View
+    {
+        $user = $request->user();
+
+        $attendanceRecord = $attendanceService->getAttendanceRecord($user, $id);
+        $application = $applicationService->getPendingApplication($attendanceRecord);
+        $data = $attendanceService->getAttendanceDetailData($attendanceRecord, $application);
+
+        return view('user.user-detail', compact('user', 'data'));
+    }
+
+    /**
+     * 勤怠修正申請を登録する。
+     */
+    public function application(AttendanceCorrectionRequest $request, int $id, AttendanceService $attendanceService, ApplicationService $applicationService): RedirectResponse
+    {
+        $attendanceRecord = $attendanceService->getAttendanceRecord($request->user(), $id);
+        $applicationService->createCorrectionApplication($attendanceRecord, $request->validated());
+
+        return redirect('/attendance/'.$id);
     }
 }

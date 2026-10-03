@@ -49,4 +49,32 @@ class User extends Authenticatable
     {
         return $this->hasMany(AttendanceRecord::class);
     }
+
+    /**
+     * 当日の勤怠状況を取得する。
+     */
+    public function getAttendanceStatusAttribute(): string
+    {
+        $attendanceRecord = $this->attendanceRecords()
+            ->whereDate('date', now()->toDateString())
+            ->with('breakRecords')
+            ->first();
+
+        if (is_null($attendanceRecord)) {
+            return '勤務外';
+        }
+
+        if (! is_null($attendanceRecord->clock_out)) {
+            return '退勤済';
+        }
+
+        $hasActiveBreak = $attendanceRecord->breakRecords
+            ->contains(fn ($breakRecord) => is_null($breakRecord->break_out));
+
+        if ($hasActiveBreak) {
+            return '休憩中';
+        }
+
+        return '出勤中';
+    }
 }

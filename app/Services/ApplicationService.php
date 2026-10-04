@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Models\Application;
 use App\Models\AttendanceRecord;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ApplicationService
@@ -46,5 +49,52 @@ class ApplicationService
 
             return $application;
         });
+    }
+
+    /**
+     * ログインユーザー自身の申請一覧表示用データを作成する。
+     */
+    public function getFormattedApplications(User $user): Collection
+    {
+        return Application::with('attendanceRecord')
+            ->whereHas('attendanceRecord', fn ($query) => $query->where('user_id', $user->id))
+            ->get()
+            ->map(fn ($application) => [
+                'id' => $application->id,
+                'approval_status' => $application->approval_status,
+                'date' => $application->attendanceRecord->date->format('Y/m/d'),
+                'comment' => $application->comment,
+                'application_date' => $application->application_date->format('Y/m/d'),
+            ]);
+    }
+
+    /**
+     * ログインユーザー自身の指定申請を取得する。
+     */
+    public function getApplication(User $user, int $applicationId): Application
+    {
+        return Application::with(['attendanceRecord', 'proposalBreaks'])
+            ->whereHas('attendanceRecord', fn ($query) => $query->where('user_id', $user->id))
+            ->findOrFail($applicationId);
+    }
+
+    /**
+     * 申請詳細表示用データを作成する。
+     */
+    public function getApplicationDetailData(Application $application): array
+    {
+        return [
+            'id' => $application->attendanceRecord->id,
+            'year' => $application->attendanceRecord->date->format('Y年'),
+            'date' => $application->attendanceRecord->date->format('n月j日'),
+            'clock_in' => Carbon::parse($application->new_clock_in)->format('H:i'),
+            'clock_out' => Carbon::parse($application->new_clock_out)->format('H:i'),
+            'breaks' => $application->proposalBreaks->map(fn ($proposalBreak) => [
+                'break_in' => Carbon::parse($proposalBreak->break_in)->format('H:i'),
+                'break_out' => $proposalBreak->break_out ? Carbon::parse($proposalBreak->break_out)->format('H:i') : '',
+            ])->toArray(),
+            'comment' => $application->comment,
+            'application' => $application->approval_status === '承認待ち' ? $application : null,
+        ];
     }
 }

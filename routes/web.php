@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\User\ApplicationController;
 use App\Http\Controllers\User\AttendanceController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
@@ -35,6 +36,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/attendance/list', [AttendanceController::class, 'index']);
     Route::get('/attendance/{id}', [AttendanceController::class, 'show']);
     Route::post('/attendance/{id}', [AttendanceController::class, 'application']);
+    Route::get('/stamp_correction_request/list', [ApplicationController::class, 'index']);
+    Route::get('/application/{application_id}', [ApplicationController::class, 'show']);
 });
 
 Route::prefix('admin')->group(function () {

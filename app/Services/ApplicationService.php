@@ -97,4 +97,17 @@ class ApplicationService
             'application' => $application->approval_status === '承認待ち' ? $application : null,
         ];
     }
+
+    /**
+     * 管理者用の全一般ユーザー申請一覧を取得する。
+     */
+    public function getAdminApplications(): Collection
+    {
+        return Application::with('attendanceRecord.user')
+            ->whereHas('attendanceRecord.user', fn ($query) => $query->where('admin_status', false))
+            ->get()
+            ->each(function ($application) {
+                $application->setRelation('AttendanceRecord', $application->attendanceRecord);
+            });
+    }
 }

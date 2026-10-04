@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\User\ApplicationController;
 use App\Http\Controllers\User\AttendanceController;
+use App\Http\Controllers\User\AttendanceReportController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'create']);
     Route::post('/attendance', [AttendanceController::class, 'store']);
     Route::get('/attendance/list', [AttendanceController::class, 'index']);
+    Route::get('/attendance/report', [AttendanceReportController::class, 'index']);
     Route::get('/application/{application_id}', [ApplicationController::class, 'show']);
 
     Route::middleware('user.type')->group(function () {

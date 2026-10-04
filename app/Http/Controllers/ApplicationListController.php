@@ -14,6 +14,13 @@ class ApplicationListController extends Controller
     public function index(Request $request, ApplicationService $applicationService): View
     {
         $user = $request->user();
+
+        if ($user->admin_status) {
+            $applications = $applicationService->getAdminApplications();
+
+            return view('admin.admin-application-list', compact('applications'));
+        }
+
         $formattedApplications = $applicationService->getFormattedApplications($user);
 
         return view('user.user-application-list', compact('user', 'formattedApplications'));

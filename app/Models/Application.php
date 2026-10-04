@@ -38,4 +38,12 @@ class Application extends Model
     {
         return $this->attendanceRecord->date;
     }
+
+    /**
+     * 申請対象のユーザーを取得する。
+     */
+    public function getUserAttribute(): User
+    {
+        return $this->attendanceRecord->user;
+    }
 }

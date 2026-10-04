@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminApplicationController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
+use App\Http\Controllers\Admin\AdminStaffController;
 use App\Http\Controllers\ApplicationListController;
 use App\Http\Controllers\AttendanceDetailController;
 use App\Http\Controllers\Auth\AdminLoginController;
@@ -36,6 +38,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/application/{application_id}', [ApplicationController::class, 'show']);
 });
 
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'show']);
+    Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'approve']);
+});
+
 Route::prefix('admin')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [AdminLoginController::class, 'create']);
@@ -46,6 +53,8 @@ Route::prefix('admin')->group(function () {
 
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/attendance/list', [AdminAttendanceController::class, 'index']);
+        Route::get('/staff/list', [AdminStaffController::class, 'index']);
+        Route::get('/attendance/staff/{id}', [AdminStaffController::class, 'show']);
     });
 
     Route::middleware('auth')->group(function () {

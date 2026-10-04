@@ -23,11 +23,11 @@ class AttendanceCorrectionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'new_clock_in' => ['bail', 'required', 'date_format:H:i', 'before:new_clock_out'],
-            'new_clock_out' => ['bail', 'required', 'date_format:H:i'],
-            'new_break_in.*' => ['bail', 'nullable', 'date_format:H:i', 'after:new_clock_in', 'before:new_clock_out'],
-            'new_break_out.*' => ['bail', 'nullable', 'date_format:H:i', 'after:new_break_in.*', 'before:new_clock_out'],
-            'comment' => ['required'],
+            'new_clock_in' => 'bail|required|date_format:H:i|before:new_clock_out',
+            'new_clock_out' => 'bail|required|date_format:H:i',
+            'new_break_in.*' => 'bail|nullable|date_format:H:i|after:new_clock_in|before:new_break_out.*|before:new_clock_out',
+            'new_break_out.*' => 'bail|nullable|date_format:H:i|before:new_clock_out',
+            'comment' => 'required',
         ];
     }
 

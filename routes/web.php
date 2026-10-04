@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminApplicationController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Http\Controllers\Admin\AdminStaffController;
 use App\Http\Controllers\ApplicationListController;
@@ -35,6 +36,11 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/application/{application_id}', [ApplicationController::class, 'show']);
+});
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'show']);
+    Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'approve']);
 });
 
 Route::prefix('admin')->group(function () {

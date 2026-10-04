@@ -110,4 +110,14 @@ class ApplicationService
                 $application->setRelation('AttendanceRecord', $application->attendanceRecord);
             });
     }
+
+    /**
+     * 管理者用の指定修正申請を取得する。
+     */
+    public function getAdminApplication(int $applicationId): Application
+    {
+        return Application::with(['attendanceRecord.user', 'proposalBreaks'])
+            ->whereHas('attendanceRecord.user', fn ($query) => $query->where('admin_status', false))
+            ->findOrFail($applicationId);
+    }
 }

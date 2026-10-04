@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Application;
 use App\Models\AttendanceRecord;
 use Illuminate\Support\Facades\DB;
 
@@ -44,6 +45,35 @@ class AttendanceCorrectionService
                     'break_out' => $breakOut,
                 ]);
             }
+        });
+    }
+
+    /**
+     * 修正申請内容を正式な勤怠情報へ反映する。
+     */
+    public function approveApplication(Application $application): void
+    {
+        DB::transaction(function () use ($application) {
+            $attendanceRecord = $application->attendanceRecord;
+
+            $attendanceRecord->update([
+                'clock_in' => $application->new_clock_in,
+                'clock_out' => $application->new_clock_out,
+                'comment' => $application->comment,
+            ]);
+
+            $attendanceRecord->breakRecords()->delete();
+
+            foreach ($application->proposalBreaks as $proposalBreak) {
+                $attendanceRecord->breakRecords()->create([
+                    'break_in' => $proposalBreak->break_in,
+                    'break_out' => $proposalBreak->break_out,
+                ]);
+            }
+
+            $application->update([
+                'approval_status' => '承認済み',
+            ]);
         });
     }
 }

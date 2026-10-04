@@ -3,10 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AttendanceCorrectionRequest;
-use App\Services\ApplicationService;
 use App\Services\AttendanceListService;
-use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +18,6 @@ class AttendanceController extends Controller
     {
         $user = $request->user();
         $now = now();
-
         $formattedDate = $now->translatedFormat('Y年n月j日(D)');
         $formattedTime = $now->format('H:i');
 
@@ -78,7 +74,6 @@ class AttendanceController extends Controller
     public function index(Request $request, AttendanceListService $attendanceListService): View
     {
         $user = $request->user();
-
         $date = $request->query('date')
             ? Carbon::createFromFormat('Y/m', $request->query('date'))->startOfMonth()
             : now()->startOfMonth();
@@ -87,34 +82,6 @@ class AttendanceController extends Controller
         $nextMonth = $date->copy()->addMonth()->format('Y/m');
         $formattedAttendanceRecords = $attendanceListService->getMonthlyAttendanceRecords($user, $date);
 
-        return view(
-            'user.user-attendance-list',
-            compact('date', 'previousMonth', 'nextMonth', 'formattedAttendanceRecords')
-        );
-    }
-
-    /**
-     * 勤怠詳細画面を表示する。
-     */
-    public function show(Request $request, int $id, AttendanceService $attendanceService, ApplicationService $applicationService): View
-    {
-        $user = $request->user();
-
-        $attendanceRecord = $attendanceService->getAttendanceRecord($user, $id);
-        $application = $applicationService->getPendingApplication($attendanceRecord);
-        $data = $attendanceService->getAttendanceDetailData($attendanceRecord, $application);
-
-        return view('user.user-detail', compact('user', 'data'));
-    }
-
-    /**
-     * 勤怠修正申請を登録する。
-     */
-    public function application(AttendanceCorrectionRequest $request, int $id, AttendanceService $attendanceService, ApplicationService $applicationService): RedirectResponse
-    {
-        $attendanceRecord = $attendanceService->getAttendanceRecord($request->user(), $id);
-        $applicationService->createCorrectionApplication($attendanceRecord, $request->validated());
-
-        return redirect('/attendance/'.$id);
+        return view('user.user-attendance-list', compact('date', 'previousMonth', 'nextMonth', 'formattedAttendanceRecords'));
     }
 }

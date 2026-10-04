@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AttendanceCorrectionRequest;
 use App\Services\ApplicationService;
+use App\Services\AttendanceListService;
 use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -74,7 +75,7 @@ class AttendanceController extends Controller
     /**
      * 月次勤怠一覧を表示する。
      */
-    public function index(Request $request, AttendanceService $attendanceService): View
+    public function index(Request $request, AttendanceListService $attendanceListService): View
     {
         $user = $request->user();
 
@@ -84,7 +85,7 @@ class AttendanceController extends Controller
 
         $previousMonth = $date->copy()->subMonth()->format('Y/m');
         $nextMonth = $date->copy()->addMonth()->format('Y/m');
-        $formattedAttendanceRecords = $attendanceService->getMonthlyAttendanceRecords($user, $date);
+        $formattedAttendanceRecords = $attendanceListService->getMonthlyAttendanceRecords($user, $date);
 
         return view(
             'user.user-attendance-list',

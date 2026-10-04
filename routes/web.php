@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -48,7 +49,8 @@ Route::prefix('admin')->group(function () {
             ->middleware('throttle:login');
     });
 
-    Route::middleware('auth')->group(function () {
+    Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+        Route::get('/attendance/list', [AdminAttendanceController::class, 'index']);
     });
 });

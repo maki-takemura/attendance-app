@@ -47,6 +47,23 @@ class AttendanceListService
     }
 
     /**
+     * 指定日の全ユーザーの勤怠一覧表示用データを取得する。
+     */
+    public function getDailyAttendanceRecords(Carbon $date): Collection
+    {
+        return AttendanceRecord::with(['user', 'breakRecords'])
+            ->whereDate('date', $date->toDateString())
+            ->get()
+            ->map(function ($attendanceRecord) {
+                $totalBreakSeconds = $this->calculateTotalBreakSeconds($attendanceRecord);
+                $attendanceRecord->total_break_time = $totalBreakSeconds > 0 ? gmdate('H:i', $totalBreakSeconds) : '';
+                $attendanceRecord->total_time = $this->calculateTotalTime($attendanceRecord, $totalBreakSeconds);
+
+                return $attendanceRecord;
+            });
+    }
+
+    /**
      * 月次一覧用に勤怠データを整形する。
      */
     private function formatAttendanceRecord(AttendanceRecord $attendanceRecord, Carbon $currentDate): array

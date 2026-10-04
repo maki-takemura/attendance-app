@@ -10,17 +10,6 @@ use Illuminate\View\View;
 class ApplicationController extends Controller
 {
     /**
-     * 申請一覧画面を表示する。
-     */
-    public function index(Request $request, ApplicationService $applicationService): View
-    {
-        $user = $request->user();
-        $formattedApplications = $applicationService->getFormattedApplications($user);
-
-        return view('user.user-application-list', compact('user', 'formattedApplications'));
-    }
-
-    /**
      * 申請詳細画面を表示する。
      */
     public function show(Request $request, int $application_id, ApplicationService $applicationService): View

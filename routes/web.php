@@ -24,21 +24,20 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:login');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'create']);
     Route::post('/attendance', [AttendanceController::class, 'store']);
     Route::get('/attendance/list', [AttendanceController::class, 'index']);
+    Route::get('/application/{application_id}', [ApplicationController::class, 'show']);
 
     Route::middleware('user.type')->group(function () {
         Route::get('/attendance/{id}', [AttendanceDetailController::class, 'show']);
         Route::post('/attendance/{id}', [AttendanceDetailController::class, 'update']);
         Route::get('/stamp_correction_request/list', [ApplicationListController::class, 'index']);
     });
-
-    Route::get('/application/{application_id}', [ApplicationController::class, 'show']);
 });
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'show']);
     Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'approve']);
     Route::post('/export', [AdminStaffController::class, 'export']);
@@ -52,7 +51,7 @@ Route::prefix('admin')->group(function () {
             ->middleware('throttle:login');
     });
 
-    Route::middleware(['auth', 'admin'])->group(function () {
+    Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/attendance/list', [AdminAttendanceController::class, 'index']);
         Route::get('/staff/list', [AdminStaffController::class, 'index']);
         Route::get('/attendance/staff/{id}', [AdminStaffController::class, 'show']);

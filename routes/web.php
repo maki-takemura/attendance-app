@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAttendanceController;
+use App\Http\Controllers\Admin\AdminStaffController;
 use App\Http\Controllers\ApplicationListController;
 use App\Http\Controllers\AttendanceDetailController;
 use App\Http\Controllers\Auth\AdminLoginController;
@@ -46,6 +47,7 @@ Route::prefix('admin')->group(function () {
 
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/attendance/list', [AdminAttendanceController::class, 'index']);
+        Route::get('/staff/list', [AdminStaffController::class, 'index']);
     });
 
     Route::middleware('auth')->group(function () {

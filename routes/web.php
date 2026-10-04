@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'show']);
     Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminApplicationController::class, 'approve']);
+    Route::post('/export', [AdminStaffController::class, 'export']);
 });
 
 Route::prefix('admin')->group(function () {
